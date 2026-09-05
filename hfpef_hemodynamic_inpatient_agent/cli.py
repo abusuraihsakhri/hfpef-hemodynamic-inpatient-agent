@@ -5,6 +5,7 @@ import argparse
 import csv
 import json
 import sys
+from pathlib import Path
 from .models import ClinicalCasePayload
 from .agents import HeartFailureCoordinator
 
@@ -68,22 +69,35 @@ def main(argv=None):
         return 0
 
     if args.command == "batch":
-        with open(args.input, mode="r", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            fieldnames = list(reader.fieldnames or [])
-            rows = list(reader)
+        input_path = Path(args.input).resolve()
+        if not input_path.is_file():
+            print(f"Error: Input file not found: {args.input}", file=sys.stderr)
+            return 1
+
+        try:
+            with open(input_path, mode="r", encoding="utf-8-sig") as f:
+                reader = csv.DictReader(f)
+                fieldnames = list(reader.fieldnames or [])
+                rows = list(reader)
+        except (csv.Error, UnicodeDecodeError) as e:
+            print(f"Error reading CSV: {e}", file=sys.stderr)
+            return 1
 
         out_fields = fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]
         out_rows = []
         for r in rows:
-            case = ClinicalCasePayload(
-                case_id=r.get("case_id", "CASE-01"),
-                patient_synthetic_id=r.get("patient_synthetic_id", "SYNTH-01"),
-                primary_metric=float(r.get("metric_primary", r.get("primary_metric", 15.0))),
-                secondary_metric=float(r.get("metric_secondary", r.get("secondary_metric", 5.0))),
-                status_flag=r.get("status_flag", r.get("status_text", "NORMAL")),
-                is_stat=bool(r.get("is_stat", r.get("critical_flag", False))),
-            )
+            try:
+                case = ClinicalCasePayload(
+                    case_id=r.get("case_id", "CASE-01"),
+                    patient_synthetic_id=r.get("patient_synthetic_id", "SYNTH-01"),
+                    primary_metric=float(r.get("metric_primary", r.get("primary_metric", 15.0))),
+                    secondary_metric=float(r.get("metric_secondary", r.get("secondary_metric", 5.0))),
+                    status_flag=r.get("status_flag", r.get("status_text", "NORMAL")),
+                    is_stat=str(r.get("is_stat", r.get("critical_flag", ""))).lower() in ("true", "1", "yes"),
+                )
+            except (ValueError, TypeError) as e:
+                print(f"Warning: Skipping row due to invalid data: {e}", file=sys.stderr)
+                continue
             dossier = coordinator.process_case(case)
             row_dict = dict(r)
             row_dict["overall_status"] = dossier["overall_status"]
@@ -92,10 +106,15 @@ def main(argv=None):
             row_dict["consensus_summary"] = dossier["consensus_summary"]
             out_rows.append(row_dict)
 
-        with open(args.output, mode="w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=out_fields)
-            writer.writeheader()
-            writer.writerows(out_rows)
+        output_path = Path(args.output).resolve()
+        try:
+            with open(output_path, mode="w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=out_fields)
+                writer.writeheader()
+                writer.writerows(out_rows)
+        except OSError as e:
+            print(f"Error writing output: {e}", file=sys.stderr)
+            return 1
         print(f"Batch processed {len(out_rows)} records -> {args.output}")
         return 0
 
@@ -107,8 +126,11 @@ def main(argv=None):
             if app:
                 print(f"Starting HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent on http://{args.host}:{args.port}")
                 uvicorn.run(app, host=args.host, port=args.port)
+            else:
+                print("FastAPI / uvicorn not installed. Run 'pip install fastapi uvicorn'", file=sys.stderr)
+                return 1
         except ImportError:
-            print("FastAPI / uvicorn not installed. Run 'pip install fastapi uvicorn'")
+            print("FastAPI / uvicorn not installed. Run 'pip install fastapi uvicorn'", file=sys.stderr)
             return 1
 
     return 0

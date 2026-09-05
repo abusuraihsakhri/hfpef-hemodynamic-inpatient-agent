@@ -4,8 +4,8 @@ Domain: Cardiology & Intensive Care Systems
 Standard: AHA/ACC Guidelines / Surviving Sepsis Campaign
 """
 import uuid
-from typing import Dict, Any, List, Optional
-from .models import SystemTaskPayload, AgentAlert, UrgencyLevel, SystemIntegrityStatus
+from typing import List
+from .models import SystemTaskPayload, AgentAlert, UrgencyLevel
 
 
 class InvariantQCWorker:

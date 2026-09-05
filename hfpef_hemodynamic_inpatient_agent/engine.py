@@ -3,9 +3,7 @@ Clinical Algorithmic Engine & Guideline Rules for HFpEF Inpatient Sentinel: Cong
 Domain: Cardiology
 Standard: ACC / AHA / ASE Valvular & Telemetry Guidelines
 """
-import math
-from typing import Dict, Any, List, Optional
-from .models import ClinicalCasePayload, AgentAlert, UrgencyLevel, ClinicalIntegrityStatus
+from typing import Dict, Any, Optional
 
 
 class ClinicalDomainEngine:
