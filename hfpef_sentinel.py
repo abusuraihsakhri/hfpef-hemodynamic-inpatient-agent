@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent
-Tracks daily spot urine sodium (target >50-70 mEq/L at 2h), net fluid balance, NT-proBNP slope, and escalates sequential nephron blockade.
+Experimental synthetic-data demonstration using arbitrary unitless rule thresholds.
 
 Domain: Cardiology
 Author: Dr. Abu Suraih Sakhri
@@ -41,7 +41,7 @@ class DomainKnowledgeRegistry:
         warnings = []
         for key in payload.keys():
             if any(phi_keyword in key.lower() for phi_keyword in ["patient_name", "ssn", "mrn_raw", "dob_raw"]):
-                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier '{key}' masked to synthetic token.")
+                warnings.append(f"PHI_DEFENSE_TRIGGERED: Sensitive field '{key}' detected; this function does not remove or mask its value.")
         return warnings
 
 class AgentAlert:
@@ -99,7 +99,7 @@ class FluidTrajectoryAgent:
                     severity=Severity.CRITICAL,
                     title="Urgent Consensus Protocol Trigger",
                     details=f"Secondary parameter index ({val2:.1f}) triggered automated supervisory escalation.",
-                    recommendation="Initiate mandatory closed-loop clinical notification protocol.",
+                    recommendation="Review the synthetic trigger; this demonstration does not notify clinicians.",
                 )
             )
         return alerts
@@ -168,7 +168,7 @@ class HeartFailureCoordinator:
         elif "guidelines" in q or "protocol" in q:
             return "No HFpEF clinical guidelines validate these illustrative rule thresholds; do not use them for patient care."
         else:
-            return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
+            return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent demonstration executor available; no live patient monitoring is performed."
 
 
 coordinator = HeartFailureCoordinator()
