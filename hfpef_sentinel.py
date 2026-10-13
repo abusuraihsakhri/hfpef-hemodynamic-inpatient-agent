@@ -166,7 +166,7 @@ class HeartFailureCoordinator:
         if "summary" in q or "status" in q:
             return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "The rule thresholds are illustrative and have not been clinically validated for HFpEF decision support."
+            return "No HFpEF clinical guidelines validate these illustrative rule thresholds; do not use them for patient care."
         else:
             return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 
