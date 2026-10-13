@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hfpef-hemodynamic-inpatient-agent"
 version = "2.0.0"
-description = "HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Engine"
+description = "Experimental hemodynamic rule explorer for synthetic demonstration inputs"
 readme = "README.md"
 authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
 license = { text = "MIT" }
@@ -13,8 +13,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Topic :: Scientific/Engineering :: Medical Science Apps.",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 requires-python = ">=3.10"
 dependencies = ["pydantic>=2.7,<3"]
