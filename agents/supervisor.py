@@ -22,9 +22,7 @@ class SystemSupervisor:
 
     def process_task(self, payload: SystemTaskPayload, actor: str = "SystemSupervisor") -> ConsensusDossier:
         # Zero-PHI outbound validation
-        PHIGuard.assert_no_phi(payload.task_id)
-        PHIGuard.assert_no_phi(payload.target_identifier)
-        PHIGuard.assert_no_phi(payload.status_descriptor)
+        PHIGuard.assert_no_phi_payload(payload.model_dump())
 
         # Multi-worker evaluations
         all_alerts: List[AgentAlert] = []
@@ -66,7 +64,7 @@ class SystemSupervisor:
             total_alerts=len(all_alerts),
             critical_alerts_count=crit_count,
             alerts=all_alerts,
-            consensus_summary=f"Multi-agent consensus completed with status [{overall_urgency.value}]. Total alerts: {len(all_alerts)}.",
+            consensus_summary=f"Illustrative rule evaluation completed with status [{overall_urgency.value}]. Total alerts: {len(all_alerts)}. Not validated for clinical decision support.",
             audit_hash=audit_entry["current_hash"],
         )
 
@@ -75,5 +73,5 @@ class SystemSupervisor:
 
     def query_supervisory_chat(self, query: str) -> str:
         PHIGuard.assert_no_phi(query)
-        prompt = f"Supervisor inquiry for Hfpef Hemodynamic Inpatient Agent under AHA/ACC Guidelines / Surviving Sepsis Campaign: {query}"
+        prompt = f"Illustrative HFpEF demo supervisory inquiry (not medical advice): {query}"
         return self.llm.invoke(prompt)

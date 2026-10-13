@@ -4,6 +4,7 @@ Domain: Cardiology & Intensive Care Systems
 Standard: AHA/ACC Guidelines / Surviving Sepsis Campaign
 """
 import os
+import csv
 import sys
 import tempfile
 from pathlib import Path
@@ -111,8 +112,13 @@ def test_batch_with_sample_csv():
     """Test batch processing with the sample CSV file."""
     result = main(["batch", "-i", "sample.csv", "-o", "test_output.csv"])
     assert result == 0
-    # Verify output file was created
+    # Verify the supplied legacy sample fields, not fallback defaults, were evaluated.
     assert os.path.exists("test_output.csv")
+    with open("test_output.csv", newline="", encoding="utf-8") as stream:
+        data = list(csv.DictReader(stream))
+    assert len(data) == 3
+    assert int(data[0]["total_alerts"]) == 3
+    assert int(data[1]["total_alerts"]) == 0
     # Clean up
     os.remove("test_output.csv")
 

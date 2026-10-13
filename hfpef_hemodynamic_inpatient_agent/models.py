@@ -1,7 +1,7 @@
 """
 Clinical Data Models & Enums for HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent.
 Domain: Cardiology
-Standard: ACC / AHA / ASE Valvular & Telemetry Guidelines
+Standard: illustrative unvalidated rule set
 """
 import datetime
 from dataclasses import dataclass, field
@@ -43,7 +43,7 @@ class AgentAlert:
     title: str
     clinical_finding: str
     actionable_recommendation: str
-    guideline_citation: str = "ACC / AHA / ASE Valvular & Telemetry Guidelines"
+    guideline_citation: str = "illustrative unvalidated rule set"
     timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:

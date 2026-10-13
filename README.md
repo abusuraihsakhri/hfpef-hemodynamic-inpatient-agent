@@ -1,182 +1,92 @@
-# Hfpef Hemodynamic Inpatient Agent
+# HFpEF Hemodynamic Inpatient Agent
 
-> **Domain:** Cardiovascular Medicine & Hemodynamic Analytics
-> **Reference Guidelines & Standards:** `AHA/ACC Practice Guidelines & ESC Clinical Standards`
+Experimental rule-based software for exploring synthetic inpatient-monitoring indicators. It includes a browser demonstration, Python command-line tools, and a FastAPI service.
 
-<div align="center">
+**Not clinically validated. Not for diagnosis, treatment, triage, real patient monitoring, or use with protected health information (PHI).** The numeric metrics are unitless illustrations, not validated HFpEF clinical measurements or guideline thresholds. No actual clinician notification or diuretic recommendation is performed.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Browser application
 
-</div>
+The static application in [web/](web/) runs entirely in modern browsers using JavaScript modules. It evaluates synthetic inputs without a server or Python runtime, shows deterministic rule results, and supports JSON export. It sends no form data over the network and uses no persistent browser storage.
 
----
-
-## 📖 What It Does
-
-**Hfpef Hemodynamic Inpatient Agent** is an advanced analytical and computational platform implementing Spot Urine Sodium Trajectory & Diuretic Resistance Agent for inpatient cardiovascular monitoring. It evaluates hemodynamic parameters across specialized sub-agents to detect congestion trajectory anomalies and diuretic resistance patterns.
-
----
-
-## ⚙️ Key Capabilities & Algorithmic Modules
-
-### 🔬 Core Algorithmic & Evaluation Engines
-
-- **`Severity`** — dedicated module for severity evaluation and state verification.
-- **`DomainKnowledgeRegistry`**: Enterprise domain rules, guideline matrices, and evidence benchmarks.
-- **`AgentAlert`** — dedicated module for agent alert evaluation and state verification.
-- **`UrineSodiumResponseAgent`**: Specialized Sub-Agent 1 for urine sodium response evaluation
-- **`FluidTrajectoryAgent`**: Specialized Sub-Agent 2 for fluid trajectory and kinetic escalation monitoring
-- **`NephronBlockadeAdvisorAgent`**: Specialized Sub-Agent 3 for biomarker concordance and nephron blockade advisory
-
----
-
-## 💻 Installation
+Run locally over HTTP (ES modules may not load directly from `file://`):
 
 ```bash
-# Clone the repository
+python -m http.server 8080 --directory web
+```
+
+Open `http://localhost:8080`. A [GitHub Pages deployment workflow](.github/workflows/pages.yml) is included; availability of a public live site depends on GitHub Pages being enabled and a successful deployment.
+
+The browser demonstrates the same generic rule triggers as the primary Python workers: primary metric **>25**, secondary metric **>12**, a manual critical flag, and a set of descriptor keywords. These cutoffs have **no claimed medical validity**. The browser does not implement the Python API, HMAC audit logging, or a PHI detector.
+
+## Python installation
+
+Requires Python **3.10+**.
+
+```bash
 git clone https://github.com/abusuraihsakhri/hfpef-hemodynamic-inpatient-agent.git
 cd hfpef-hemodynamic-inpatient-agent
-
-# Install dependencies
-pip install fastapi uvicorn pydantic pytest
+python -m pip install -e ".[api,test]"
 ```
 
----
+The repository retains several original entry points. The documented primary CLI and API use the `agents/` package and `cli.py`. The `hfpef_hemodynamic_inpatient_agent/` package and `hfpef_sentinel.py` are separate legacy rule implementations with different data schemas and thresholds. Their outputs should not be assumed equivalent.
 
-## 🖥️ CLI Usage
+### Primary CLI
 
-The CLI provides multiple subcommands for different operations:
-
-### 1. Audit (Single Case Evaluation)
 ```bash
-python cli.py audit --task-id TASK-2026-001 --target KEY-TARGET-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
-```
-
-### 2. Chat (Supervisory Query)
-```bash
-python cli.py chat "Explain the current system status"
-```
-
-### 3. Batch (CSV Processing)
-```bash
-python cli.py batch -i sample.csv -o results.csv
-```
-
-### 4. Verify Audit Trail
-```bash
+python cli.py audit --task-id SYN-001 --target SYN-TARGET-1 --primary 28.5 --secondary 14.2 --status DISCORDANT
+python cli.py chat "show configuration"
+python cli.py batch --input sample.csv --output results.csv
 python cli.py verify-audit
-```
-
-### 5. Serve (REST API Server)
-```bash
 python cli.py serve --host 127.0.0.1 --port 8000
 ```
 
-### CLI Parameters
+The batch importer accepts both `primary_metric`/`secondary_metric` and the supplied sample's `metric_primary`/`metric_secondary` column conventions. It also recognizes `case_id`, `patient_synthetic_id`, `status_flag`, and `is_stat`. Rows containing invalid values or recognized sensitive identifiers are skipped with a warning. Results are CSV files with an illustrative rule status and the per-process audit hash.
 
-| Parameter | Command | Description | Default |
-|:----------|:--------|:------------|:--------|
-| `--task-id` | audit | Unique task / case identifier | TASK-2026-001 |
-| `--target` | audit | Target identifier | KEY-TARGET-01 |
-| `--primary` | audit | Primary metric (float) | 28.5 |
-| `--secondary` | audit | Secondary metric (float) | 14.2 |
-| `--critical` | audit | Flag critical status | False |
-| `--status` | audit | Status descriptor | DISCORDANT |
-| `-i, --input` | batch | Input CSV file path | Required |
-| `-o, --output` | batch | Output CSV file path | results.csv |
-| `--host` | serve | Server host | 127.0.0.1 |
-| `--port` | serve | Server port | 8000 |
+### FastAPI
 
-### Input Data Schema (for batch CSV)
+Start the service with the `serve` command above. The primary app (`agents/api.py`) exposes:
 
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `task_id` | Task identifier | Required |
-| `target_identifier` | Target entity identifier | Required |
-| `primary_metric` | Primary measurement value | Required |
-| `secondary_metric` | Secondary measurement value | Optional |
-| `is_critical_flag` | Critical status flag | Optional |
-| `status_descriptor` | Status description | Optional |
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /health` | Service health and demonstration scope |
+| `POST /api/audit` | Evaluate a synthetic `SystemTaskPayload` |
+| `POST /api/chat` | Deterministic mock response; no live language-model provider |
+| `GET /api/audit/logs` | In-memory audit metadata and HMAC chain verification |
+| `GET /metrics` | JSON counters for in-memory demonstration activity |
 
----
+API documentation is available at `http://127.0.0.1:8000/docs`. The standalone `openapi_spec.json` is a reference snapshot; the running FastAPI app generates its own OpenAPI schema.
 
-## 🛡️ Security & Enterprise Architecture
+## Security and data handling
 
-* **Zero-PHI Outbound Interceptor:** Active AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition.
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
-* **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
+- Use **synthetic identifiers only**. The Python API includes best-effort regex and nested-field screening; this does **not** guarantee PHI detection, HIPAA compliance, or safe de-identification.
+- Audit entries are HMAC-SHA256 signed and their signatures are reverified. An `AUDIT_SECRET_KEY` environment variable is **mandatory when `APP_ENV=production`**. Without it, non-production execution uses an ephemeral development key; verification does not survive process restart.
+- Audit events and processed dossiers are stored **in process memory only**, not in durable storage. There is no authentication, authorization, access logging, rate limiting, retention control, or external secret-management system.
+- The API should run on localhost for demonstration. Do not expose it as a patient-data service without a separate, documented security and clinical validation program.
+- The LLM factory currently implements **only a deterministic mock adapter**. It does not call external model APIs.
 
-### Security Hardening
-
-- The `AUDIT_SECRET_KEY` environment variable **must** be set in production to ensure cryptographic audit trail integrity.
-- Without `AUDIT_SECRET_KEY`, a development-only fallback is used with a runtime warning.
-- All file I/O operations validate paths to prevent directory traversal attacks.
-
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite:
+## Tests and deployment
 
 ```bash
-pytest -v
+python -m pytest -v
+node --test tests/browser_demo.test.mjs
+python -m pip check
 ```
 
-Execute high-throughput batch simulation benchmarks:
+GitHub Actions tests Python 3.10–3.12, the package installation, and browser evaluation logic. The browser demonstration can be served by GitHub Pages without Pyodide because its small rule evaluator is implemented directly in JavaScript; the Python API and its in-memory signed log require a separate server.
+
+For local Docker use, set a private key in the environment (never commit it):
 
 ```bash
-python simulator.py 1000
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+docker compose up --build
 ```
 
----
+Docker serves the Python API on port 8000, **not** the static Pages demonstration. The container uses `APP_ENV=production` and refuses to start without a signing key.
 
-## 🐳 Container Deployment
+## Technical scope
 
-```bash
-# Build and run with Docker
-docker build -t hfpef-hemodynamic-inpatient-agent .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secure-key hfpef-hemodynamic-inpatient-agent
+Python, Pydantic 2, FastAPI, Uvicorn, pytest, JavaScript ES modules, Node's built-in test runner, Docker and GitHub Actions. The demo is intended for modern ES-module-capable desktop and mobile browsers. Browser compatibility and clinical performance have not been formally validated.
 
-# Or use docker-compose
-AUDIT_SECRET_KEY=your-secure-key docker-compose up
-```
+## License
 
----
-
-## 📁 Project Structure
-
-```
-hfpef-hemodynamic-inpatient-agent/
-├── agents/                     # Core agent package
-│   ├── api.py                  # FastAPI REST endpoints
-│   ├── base.py                 # Security, PHI guard, audit trail
-│   ├── models.py               # Pydantic data models
-│   ├── supervisor.py           # Supervisor orchestrator
-│   ├── workers.py              # Specialized worker agents
-│   ├── llm_factory.py          # LLM provider factory
-│   ├── metrics.py              # Prometheus metrics collector
-│   ├── learning.py             # Bayesian calibration engine
-│   └── streamer.py             # WebSocket telemetry streamer
-├── tests/                      # Test suite
-├── hfpef_hemodynamic_inpatient_agent/  # Package module
-├── cli.py                      # Main CLI entry point
-├── hfpef_sentinel.py           # Standalone sentinel agent
-├── enrichment.py               # Feature enrichment engines
-├── simulator.py                # Batch simulation tool
-├── sample.csv                  # Sample input data
-├── Dockerfile                  # Docker build config
-└── docker-compose.yml          # Docker Compose config
-```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE).

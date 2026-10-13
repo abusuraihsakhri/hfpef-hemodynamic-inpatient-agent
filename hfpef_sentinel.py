@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent
-Tracks daily spot urine sodium (target >50-70 mEq/L at 2h), net fluid balance, NT-proBNP slope, and escalates sequential nephron blockade.
+Experimental synthetic-data demonstration using arbitrary unitless rule thresholds.
 
 Domain: Cardiology
 Author: Dr. Abu Suraih Sakhri
@@ -31,17 +31,17 @@ class Severity(str):
 # ==============================================================================
 
 class DomainKnowledgeRegistry:
-    """Enterprise domain rules, guideline matrices, and evidence benchmarks."""
+    """Experimental rules; no clinical validation or HIPAA assessment."""
     SYSTEM_VERSION = "2.0.0-PRO-CLINICAL"
-    ZERO_PHI_COMPLIANCE = True
-    HIPAA_SAFE_HARBOR = "ACTIVE_ON_PREMISES"
+    ZERO_PHI_COMPLIANCE = False
+    HIPAA_SAFE_HARBOR = "NOT_ASSESSED"
 
     @staticmethod
     def audit_security_and_integrity(payload: Dict[str, Any]) -> List[str]:
         warnings = []
         for key in payload.keys():
             if any(phi_keyword in key.lower() for phi_keyword in ["patient_name", "ssn", "mrn_raw", "dob_raw"]):
-                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier '{key}' masked to synthetic token.")
+                warnings.append(f"PHI_DEFENSE_TRIGGERED: Sensitive field '{key}' detected; this function does not remove or mask its value.")
         return warnings
 
 class AgentAlert:
@@ -99,7 +99,7 @@ class FluidTrajectoryAgent:
                     severity=Severity.CRITICAL,
                     title="Urgent Consensus Protocol Trigger",
                     details=f"Secondary parameter index ({val2:.1f}) triggered automated supervisory escalation.",
-                    recommendation="Initiate mandatory closed-loop clinical notification protocol.",
+                    recommendation="Review the synthetic trigger; this demonstration does not notify clinicians.",
                 )
             )
         return alerts
@@ -166,9 +166,9 @@ class HeartFailureCoordinator:
         if "summary" in q or "status" in q:
             return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "All sub-agents operate under validated consensus clinical algorithms and CAP/CLSI/NCCN/WHO standards."
+            return "No HFpEF clinical guidelines validate these illustrative rule thresholds; do not use them for patient care."
         else:
-            return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
+            return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent demonstration executor available; no live patient monitoring is performed."
 
 
 coordinator = HeartFailureCoordinator()
@@ -181,7 +181,7 @@ def create_app():
 
         app = FastAPI(
             title="HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent",
-            description="Tracks daily spot urine sodium (target >50-70 mEq/L at 2h), net fluid balance, NT-proBNP slope, and escalates sequential nephron blockade.",
+            description="Runs an experimental, unitless rule demonstration using synthetic case data.",
             version="1.0.0",
         )
 
