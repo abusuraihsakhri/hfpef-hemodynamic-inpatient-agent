@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from agents.models import SystemTaskPayload
 from agents.supervisor import SystemSupervisor
-from agents.base import AuditLogger
+from agents.base import AuditLogger, SecurityException
 
 supervisor = SystemSupervisor(model_provider="mock")
 
@@ -82,7 +82,7 @@ def main(argv=None):
         return 0
 
     if args.command == "batch":
-        # Path traversal protection: resolve and validate input path
+        # Accept explicit absolute or relative input file paths.
         input_path = Path(args.input).resolve()
         if not input_path.is_file():
             print(f"Error: Input file not found: {args.input}", file=sys.stderr)
@@ -97,30 +97,43 @@ def main(argv=None):
             print(f"Error reading CSV: {e}", file=sys.stderr)
             return 1
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        if not fieldnames:
+            print("Error: CSV has no header", file=sys.stderr)
+            return 1
+
+        result_fields = ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        out_fields = list(dict.fromkeys(fieldnames + result_fields))
         out_rows = []
-        for r in rows:
+        for row_number, r in enumerate(rows, start=2):
             try:
+                primary = r.get("primary_metric") or r.get("metric_primary")
+                if primary is None:
+                    raise ValueError("primary_metric (or metric_primary) is required")
+                secondary = r.get("secondary_metric") or r.get("metric_secondary") or 0.0
                 payload = SystemTaskPayload(
-                    task_id=r.get("task_id", "TASK-01"),
-                    target_identifier=r.get("target_identifier", "TARGET-01"),
-                    primary_metric=float(r.get("primary_metric", 15.0)),
-                    secondary_metric=float(r.get("secondary_metric", 5.0)),
-                    status_descriptor=r.get("status_descriptor", "NOMINAL"),
-                    is_critical_flag=str(r.get("is_critical_flag", "")).lower() in ("true", "1", "yes"),
+                    task_id=r.get("task_id") or r.get("case_id") or f"TASK-{row_number}",
+                    target_identifier=r.get("target_identifier") or r.get("patient_synthetic_id") or f"SYN-{row_number}",
+                    primary_metric=float(primary),
+                    secondary_metric=float(secondary),
+                    status_descriptor=r.get("status_descriptor") or r.get("status_flag") or "NOMINAL",
+                    is_critical_flag=str(
+                        r.get("is_critical_flag") or r.get("is_stat") or ""
+                    ).strip().lower() in ("true", "1", "yes"),
                 )
-            except (ValueError, TypeError) as e:
-                print(f"Warning: Skipping row due to invalid data: {e}", file=sys.stderr)
+                dossier = supervisor.process_task(payload)
+            except (ValueError, TypeError, SecurityException) as error:
+                print(f"Warning: Skipping row {row_number} due to invalid or sensitive data: {type(error).__name__}", file=sys.stderr)
                 continue
-            dossier = supervisor.process_task(payload)
             row_dict = dict(r)
-            row_dict["overall_urgency"] = dossier.overall_urgency.value
-            row_dict["integrity_status"] = dossier.integrity_status.value
-            row_dict["total_alerts"] = dossier.total_alerts
-            row_dict["audit_hash"] = dossier.audit_hash
+            row_dict.update(
+                overall_urgency=dossier.overall_urgency.value,
+                integrity_status=dossier.integrity_status.value,
+                total_alerts=dossier.total_alerts,
+                audit_hash=dossier.audit_hash,
+            )
             out_rows.append(row_dict)
 
-        # Validate output path is within workspace
+        # Respect explicit output paths; caller controls the output directory.
         output_path = Path(args.output).resolve()
         try:
             with open(output_path, mode="w", encoding="utf-8", newline="") as f:
