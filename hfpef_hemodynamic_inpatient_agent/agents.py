@@ -93,7 +93,7 @@ class HeartFailureCoordinator:
             "stat_critical_alerts": stat_count,
             "warning_alerts": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "guideline_standard": "ACC / AHA / ASE Valvular & Telemetry Guidelines",
+            "guideline_standard": "illustrative unvalidated rule set",
             "consensus_summary": f"Multi-agent supervision completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -105,6 +105,6 @@ class HeartFailureCoordinator:
         if "status" in q or "summary" in q:
             return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent currently tracking {len(self.case_registry)} cases in on-premises memory."
         elif "guideline" in q or "standard" in q:
-            return "Active clinical surveillance operates under ACC / AHA / ASE Valvular & Telemetry Guidelines validated protocols."
+            return "This experimental software has not undergone clinical validation."
         else:
             return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent executive agent online. Zero-PHI air-gapped monitoring active."
