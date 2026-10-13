@@ -36,6 +36,9 @@ jobs:
       run: |
         pytest -v
 
+    - name: Browser demo unit tests
+      run: node --test tests/browser_demo.test.mjs
+
     - name: Security SAST & Zero-PHI Audit
       run: |
         python -c "
