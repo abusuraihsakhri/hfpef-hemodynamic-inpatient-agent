@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hfpef-hemodynamic-inpatient-engine"
+name = "hfpef-hemodynamic-inpatient-agent"
 version = "2.0.0"
 description = "HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Engine"
 readme = "README.md"
@@ -16,12 +16,23 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-requires-python = ">=3.9"
-dependencies = []
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2.7,<3"]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1"]
+test = ["pytest>=8,<10", "httpx>=0.27,<1"]
 
 [project.scripts]
 hfpef-hemodynamic-inpatient-engine = "hfpef_hemodynamic_inpatient_agent.cli:main"
+hfpef-hemodynamic-demo = "cli:main"
 
 [project.urls]
-Homepage = "https://github.com/abusuraihsakhri/hfpef-hemodynamic-inpatient-engine"
-Repository = "https://github.com/abusuraihsakhri/hfpef-hemodynamic-inpatient-engine.git"
+Homepage = "https://github.com/abusuraihsakhri/hfpef-hemodynamic-inpatient-agent"
+Repository = "https://github.com/abusuraihsakhri/hfpef-hemodynamic-inpatient-agent.git"
+
+[tool.setuptools]
+py-modules = ["cli", "enrichment", "hfpef_sentinel", "hfpef_sentinel_app", "hfpef_hemodynamic_inpatient_agent_app", "simulator"]
+
+[tool.setuptools.packages.find]
+include = ["agents", "hfpef_hemodynamic_inpatient_agent"]
