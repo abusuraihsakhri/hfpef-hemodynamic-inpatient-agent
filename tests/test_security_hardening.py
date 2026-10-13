@@ -79,3 +79,27 @@ def test_nonfinite_metrics_rejected(value):
 def test_unimplemented_model_provider_is_not_silently_mocked():
     with pytest.raises(ValueError, match="not implemented"):
         LLMFactory.create("openai")
+
+
+def test_delimiter_changes_cannot_preserve_signature():
+    trail = AuditTrail(secret_key="test-key")
+    trail.log("a|b", "c", "CHECK", {"value": 1})
+    trail.logs[0]["actor"] = "a"
+    trail.logs[0]["actor_tier"] = "b|c"
+    assert not trail.verify_integrity()
+
+
+def test_parallel_audit_writes_form_one_valid_chain():
+    from concurrent.futures import ThreadPoolExecutor
+
+    trail = AuditTrail(secret_key="test-key")
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(lambda i: trail.log("worker", "test", "CHECK", {"index": i}), range(100)))
+    assert len(trail.get_trail()) == 100
+    assert trail.verify_integrity()
+
+
+def test_weak_production_key_rejected(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "production")
+    with pytest.raises(RuntimeError, match="32 bytes"):
+        AuditTrail(secret_key="short")
