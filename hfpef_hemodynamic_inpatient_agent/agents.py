@@ -107,4 +107,4 @@ class HeartFailureCoordinator:
         elif "guideline" in q or "standard" in q:
             return "This experimental software has not undergone clinical validation."
         else:
-            return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent executive agent online. Zero-PHI air-gapped monitoring active."
+            return f"HFpEF Inpatient Sentinel: Congestion Trajectory & Diuretic Resistance Agent experimental coordinator ready for synthetic-data evaluation; PHI protection is not guaranteed."
