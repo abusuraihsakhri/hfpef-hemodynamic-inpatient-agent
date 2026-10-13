@@ -6,6 +6,10 @@ export function evaluateDemo(input) {
   const task = String(input.task_id ?? "").trim();
   const target = String(input.target_identifier ?? "").trim();
   const descriptor = String(input.status_descriptor ?? "").trim();
+  if ([input.primary_metric, input.secondary_metric].some(
+      value => value === null || value === undefined || String(value).trim() === "")) {
+    throw new Error("Enter finite numeric values for both demonstration metrics.");
+  }
   const primary = Number(input.primary_metric);
   const secondary = Number(input.secondary_metric);
   const flagged = input.is_critical_flag === true;
