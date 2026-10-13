@@ -24,7 +24,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install fastapi uvicorn pydantic pytest
+        python -m pip install -e ".[api,test]"
+
+    - name: Check installed package dependencies
+      run: python -m pip check
+
+    - name: Compile Python source
+      run: python -m compileall -q agents hfpef_hemodynamic_inpatient_agent
 
     - name: Run Pytest Suite
       run: |
