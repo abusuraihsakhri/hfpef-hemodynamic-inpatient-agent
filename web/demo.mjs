@@ -122,7 +122,10 @@ if (typeof document !== "undefined") {
     const link = document.createElement("a");
     link.href = objectUrl;
     link.download = "hfpef-demo-result.json";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(objectUrl);
+    link.remove();
+    // Keep the object URL alive until the browser initiates the download.
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
   });
 }
