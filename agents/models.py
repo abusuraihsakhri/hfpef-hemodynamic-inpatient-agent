@@ -1,7 +1,7 @@
 """
 Pydantic v2 schemas and data definitions for Hfpef Hemodynamic Inpatient Agent.
 Domain: Cardiology & Intensive Care Systems
-Standard: AHA/ACC Guidelines / Surviving Sepsis Campaign
+Standard: illustrative unvalidated rule set
 """
 import datetime
 from enum import Enum
@@ -39,7 +39,7 @@ class AgentAlert(BaseModel):
     summary: str
     technical_details: str
     actionable_remediation: str
-    standard_reference: str = "AHA/ACC Guidelines / Surviving Sepsis Campaign"
+    standard_reference: str = "illustrative unvalidated rule set"
     timestamp: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:
@@ -57,7 +57,7 @@ class ConsensusDossier(BaseModel):
     total_alerts: int
     critical_alerts_count: int
     alerts: List[AgentAlert]
-    standard_reference: str = "AHA/ACC Guidelines / Surviving Sepsis Campaign"
+    standard_reference: str = "illustrative unvalidated rule set"
     consensus_summary: str
     audit_hash: str
     timestamp: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
