@@ -39,11 +39,14 @@ jobs:
     - name: Browser demo unit tests
       run: node --test tests/browser_demo.test.mjs
 
-    - name: Security SAST & Zero-PHI Audit
+    - name: HMAC integrity smoke check
       run: |
         python -c "
-        from agents.base import PHIGuard, AuditLogger
-        import pytest
-        assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
+        from agents.base import AuditTrail
+        trail = AuditTrail(secret_key='ci-smoke-key')
+        trail.log('ci', 'test', 'CHECK', {'synthetic': True})
+        assert trail.verify_integrity()
+        trail.logs[-1]['current_hash'] = '0' * 64
+        assert not trail.verify_integrity()
+        print('Audit integrity check passed')
         "
