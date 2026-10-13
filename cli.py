@@ -58,7 +58,7 @@ def main(argv=None):
         dossier = supervisor.process_task(payload)
         print("=" * 80)
         print(f"  HFPEF HEMODYNAMIC INPATIENT AGENT")
-        print(f"  Domain: Cardiology & Intensive Care Systems | Standard: AHA/ACC Guidelines / Surviving Sepsis Campaign")
+        print(f"  Illustrative unitless thresholds only | Not validated for patient-care decisions")
         print(f"  Dossier ID: {dossier.dossier_id} | Urgency: [{dossier.overall_urgency.value}]")
         print("=" * 80)
         for a in dossier.alerts:
